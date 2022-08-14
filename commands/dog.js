@@ -2,21 +2,21 @@ const { SlashCommandBuilder, EmbedBuilder }  = require('discord.js');
 
 module.exports = {
     data: new SlashCommandBuilder()
-        .setName('cat')
-        .setDescription('Get a cat pic!'),
+        .setName('dog')
+        .setDescription('Get a dog pic!'),
     async execute(interaction) {
         var request = require('request');
         
-        request("http://api.thecatapi.com/v1/images/search", function (error, response, body) {
+        request("https://dog.ceo/api/breeds/image/random", function (error, response, body) {
           if (!error && response.statusCode == 200) {
             var data = JSON.parse(body);
-            var cat = data[0]["url"];
-            const catEmbed = new EmbedBuilder()
+            var dog = data["message"];
+            const dogEmbed = new EmbedBuilder()
             .setColor("#00FF00")
-            .setTitle("😻")
-            .setImage(cat)
-            .setFooter({text: '💖 Powered by The Cat API'});
-            interaction.reply({embeds:[catEmbed]})
+            .setTitle("🐶")
+            .setImage(dog)
+            .setFooter({text: '💖 Powered by Dog API'});
+            interaction.reply({embeds:[dogEmbed]})
           } else {
             if(error) console.log(error);
             if(response.statusCode != 200) console.log(`Response code: ${response.statusCode}, message: ${response.statusMessage}`);
