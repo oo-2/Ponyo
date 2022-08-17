@@ -27,8 +27,10 @@ module.exports = {
           fact = fact.replace(/[?.!,;]?$/g,'');
           return interaction.reply("Did you know that "+fact.toLowerCase()+"?");
         } else {
-          if(error) console.log(error);
-          if(response.statusCode != 200) console.log(`Response code: ${response.statusCode}, message: ${response.statusMessage}`);
+          if(error)  { 
+            console.log(error);
+            if(response.statusCode) console.log(`Response code: ${response.statusCode}, message: ${response.statusMessage}`);
+          }
           return interaction.reply("There was an error, please try again later")
         }
         });

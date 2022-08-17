@@ -57,10 +57,11 @@ async function cryptoPrices(){
     if(error){
       client.user.setPresence({ activities: [{ name: 'API Error', type: ActivityType.Watching}], status: 'idle'});
       if(DEBUG == 1) console.log(`Error with calculating price change in ${currCrypto}`)
+      if(response.statusCode){
+        console.log(`Bad response code: ${response.statusCode}, message: ${response.statusMessage}`);
+      }
     }
-    if(response.statusCode != 200){
-      console.log(`Current Crypto: ${currCrypto} Bad response code: ${response.statusCode}, message: ${response.statusMessage}`);
-    }
+
   });
     cryptoCount++;
     if(DEBUG == 1) console.log(`Crypto count is ${cryptoCount}`)

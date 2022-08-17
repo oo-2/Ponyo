@@ -18,8 +18,10 @@ module.exports = {
             .setFooter({text: '💖 Powered by Dog API'});
             interaction.reply({embeds:[dogEmbed]})
           } else {
-            if(error) console.log(error);
-            if(response.statusCode != 200) console.log(`Response code: ${response.statusCode}, message: ${response.statusMessage}`);
+            if(error)  { 
+              console.log(error);
+              if(response.statusCode) console.log(`Response code: ${response.statusCode}, message: ${response.statusMessage}`);
+            }
             return interaction.reply("There was an error, please try again later")
           }
         });
