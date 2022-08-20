@@ -4,6 +4,7 @@ intents.add(IntentsBitField.Flags.GuildPresences, IntentsBitField.Flags.GuildMem
 const client = new Client({ intents: intents });
 const config = require('./config.json');
 const commandHandler = require('./handlers/command.js')
+const db = require('./handlers/database.js')
 var request = require('request');
 const fs = require('fs');
 var DEBUG = 1;
@@ -19,6 +20,16 @@ for (const file of commandFiles) {
 
 client.on('ready', () => { 
   console.log(`Logged in as ${client.user.tag}!`);
+  const guilds = client.guilds.cache.map(guild => guild.id);
+  for (const guild of guilds) {
+    var query = `CREATE TABLE IF NOT EXISTS "${guild}" (
+      "UID" BIGINT,
+      "UIDType" TEXT,
+      UNIQUE("UID"));`
+    db.query(query, (err) => {
+      if(err != undefined) console.log(err);
+    });
+  }
   cryptoPrices(); 
 });
 
@@ -37,6 +48,17 @@ client.on('interactionCreate', async (interaction) => {
 		await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
 	}
 });
+
+client.on('guildCreate', (guild) => {
+  query = `CREATE TABLE IF NOT EXISTS "${guild.id}" (
+    "UID" BIGINT,
+    "UIDType" TEXT,
+    UNIQUE("UID"));
+    TRUNCATE TABLE "${guild.id}";`
+  db.query(query, (err) => {
+    console.log(err)
+  });
+})
 
 async function cryptoPrices(){
   const cryptoID = ['bitcoin', 'litecoin', 'ethereum']
@@ -57,9 +79,7 @@ async function cryptoPrices(){
     if(error){
       client.user.setPresence({ activities: [{ name: 'API Error', type: ActivityType.Watching}], status: 'idle'});
       if(DEBUG == 1) console.log(`Error with calculating price change in ${currCrypto}`)
-      if(response.statusCode){
-        console.log(`Bad response code: ${response.statusCode}, message: ${response.statusMessage}`);
-      }
+      if(response && response.statusCode) console.log(`Response code: ${response.statusCode}`);
     }
 
   });
