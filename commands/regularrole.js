@@ -3,7 +3,7 @@ const db = require('../handlers/database.js');
 module.exports = {
 	data: new SlashCommandBuilder()
 		.setName('regularrole')
-		.setDescription('Removes SAR or Color from role.')
+		.setDescription('Set as regular role')
         .addStringOption(option => option.setName('roles').setDescription('Tag each role or enter the ID'))
         .setDefaultMemberPermissions(PermissionsBitField.Flags.Administrator),
     async execute(interaction) {

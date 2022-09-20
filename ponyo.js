@@ -7,7 +7,6 @@ const commandHandler = require('./handlers/command.js')
 const db = require('./handlers/database.js')
 var request = require('request');
 const fs = require('fs');
-var DEBUG = 1;
 var cryptoCount = 0;
 client.commands = new Collection();
 const commandsPath = './commands/';
@@ -37,7 +36,6 @@ client.on('interactionCreate', async (interaction) => {
 	if (!interaction.isChatInputCommand()) return;
 
 	const command = client.commands.get(interaction.commandName);
-  if(DEBUG == 1) console.log(`The ${interaction.commandName} command was ran`)
 	if (!command) return;
 
 	try {
@@ -70,7 +68,6 @@ async function cryptoPrices(){
       var price = parseFloat(prices["data"]["priceUsd"]).toFixed(2);
       var symbol = prices["data"]["symbol"];
       price = price.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-      if(DEBUG == 1) console.log(`Current price of ${symbol} is ${price} and price change is ${priceChange}%`)
       if(priceChange > 0) 
         client.user.setPresence({ activities: [{ name:  symbol + ' $'+price+'↑'+priceChange+'%', type: ActivityType.Playing}], status: 'online'});
       if(priceChange < 0) 
@@ -78,13 +75,12 @@ async function cryptoPrices(){
     }
     if(error){
       client.user.setPresence({ activities: [{ name: 'API Error', type: ActivityType.Watching}], status: 'idle'});
-      if(DEBUG == 1) console.log(`Error with calculating price change in ${currCrypto}`)
       if(response && response.statusCode) console.log(`Response code: ${response.statusCode}`);
     }
 
   });
     cryptoCount++;
-    if(DEBUG == 1) console.log(`Crypto count is ${cryptoCount}`)
+
     setTimeout(cryptoPrices, 30000);
 }
 client.login(config.token);

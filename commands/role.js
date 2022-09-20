@@ -10,12 +10,12 @@ const {
 const db = require('../handlers/database.js');
 module.exports = {
     data: new SlashCommandBuilder()
-        .setName('color')
-        .setDescription('Assign/unassign yourself a color'),
+        .setName('role')
+        .setDescription('Assign/unassign yourself a role'),
     async execute(interaction) {
         const guildID = interaction.guild.id;
 
-        var query = `SELECT "UID" FROM "${guildID}" WHERE "UIDType"='rolecolor';`;
+        var query = `SELECT "UID" FROM "${guildID}" WHERE "UIDType"='rolesa';`;
         var roles = [];
         try {
             roles = await db.query(query);
@@ -52,7 +52,7 @@ module.exports = {
         if (roleNames.length == 0) {
 
             await interaction.reply({
-                content: "No color roles set.",
+                content: "No self-assignable roles set.",
                 ephemeral: true
             })
         } else {
@@ -76,7 +76,7 @@ module.exports = {
                     .addComponents(
                         new SelectMenuBuilder()
                         .setCustomId('select')
-                        .setPlaceholder('Select your color role')
+                        .setPlaceholder('Select your role')
                         .addOptions(optionPages),
                     );
                 const roleEmbed = new EmbedBuilder()
@@ -144,7 +144,7 @@ module.exports = {
 
             btnCollector.on('end', async () => {
                 await interaction.editReply({
-                    content: "Run /color again if you'd like to restart.",
+                    content: "Run /role again if you'd like to restart.",
                     embeds: [],
                     components: []
                 });
@@ -153,19 +153,13 @@ module.exports = {
             menuCollector.on('collect', async i => {
                 var guildMember = await interaction.guild.members.fetch(interaction.user.id);
                 if (guildMember.roles.cache.has(i.values[0]) == false) {
-
+                    await guildMember.roles.add(i.values);
                     await i.deferUpdate();
                     await i.editReply({
                         content: "You've been given the role: <@&" + i.values + ">",
                         embeds: [],
                         components: []
                     });
-                    for (currRoleID of roleIDs) {
-                        if (guildMember.roles.cache.has(currRoleID) && currRoleID != i.values) {
-                            await guildMember.roles.remove([currRoleID])
-                        }
-                    }
-                    await guildMember.roles.add(i.values);
                 } else {
                     await i.deferUpdate();
                     await i.editReply({
