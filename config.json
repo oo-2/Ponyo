@@ -1,0 +1,13 @@
+{
+    "clientId": "",
+    "guildId": "",
+    "token": "",
+    "db": 
+    {
+        "user": "",
+        "password":"",
+        "name": "",
+        "host": "",
+        "port": 5432
+    }
+}
