@@ -10,6 +10,6 @@ module.exports = {
         .setTitle(":ping_pong:  Pong!")
         .setDescription(`**${Math.round(interaction.client.ws.ping)}** ms`)
         .setTimestamp();
-        interaction.reply({embeds:[ping]});
+        interaction.reply({embeds:[ping], ephemeral: true});
 	},
 };
