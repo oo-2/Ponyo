@@ -4,9 +4,9 @@ intents.add(IntentsBitField.Flags.GuildPresences, IntentsBitField.Flags.GuildMem
 const client = new Client({ intents: intents });
 const config = require('./config.json');
 const commandHandler = require('./handlers/command.js')
+const db = require('./handlers/database.js')
 var request = require('request');
 const fs = require('fs');
-var DEBUG = 1;
 var cryptoCount = 0;
 client.commands = new Collection();
 const commandsPath = './commands/';
@@ -19,18 +19,23 @@ for (const file of commandFiles) {
 
 client.on('ready', () => { 
   console.log(`Logged in as ${client.user.tag}!`);
-  cryptoPrices();
-    
-});
-client.on('message', async msg => {
-
+  const guilds = client.guilds.cache.map(guild => guild.id);
+  for (const guild of guilds) {
+    var query = `CREATE TABLE IF NOT EXISTS "${guild}" (
+      "UID" BIGINT,
+      "UIDType" TEXT,
+      UNIQUE("UID"));`
+    db.query(query, (err) => {
+      if(err != undefined) console.log(err);
+    });
+  }
+  cryptoPrices(); 
 });
 
 client.on('interactionCreate', async (interaction) => {
 	if (!interaction.isChatInputCommand()) return;
 
 	const command = client.commands.get(interaction.commandName);
-  if(DEBUG == 1) console.log(`The ${interaction.commandName} command was ran`)
 	if (!command) return;
 
 	try {
@@ -42,6 +47,17 @@ client.on('interactionCreate', async (interaction) => {
 	}
 });
 
+client.on('guildCreate', (guild) => {
+  query = `CREATE TABLE IF NOT EXISTS "${guild.id}" (
+    "UID" BIGINT,
+    "UIDType" TEXT,
+    UNIQUE("UID"));
+    TRUNCATE TABLE "${guild.id}";`
+  db.query(query, (err) => {
+    console.log(err)
+  });
+})
+
 async function cryptoPrices(){
   const cryptoID = ['bitcoin', 'litecoin', 'ethereum']
   var currCrypto = cryptoID[cryptoCount%cryptoID.length]
@@ -52,7 +68,6 @@ async function cryptoPrices(){
       var price = parseFloat(prices["data"]["priceUsd"]).toFixed(2);
       var symbol = prices["data"]["symbol"];
       price = price.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-      if(DEBUG == 1) console.log(`Current price of ${symbol} is ${price} and price change is ${priceChange}%`)
       if(priceChange > 0) 
         client.user.setPresence({ activities: [{ name:  symbol + ' $'+price+'↑'+priceChange+'%', type: ActivityType.Playing}], status: 'online'});
       if(priceChange < 0) 
@@ -60,14 +75,12 @@ async function cryptoPrices(){
     }
     if(error){
       client.user.setPresence({ activities: [{ name: 'API Error', type: ActivityType.Watching}], status: 'idle'});
-      if(DEBUG == 1) console.log(`Error with calculating price change in ${currCrypto}`)
+      if(response && response.statusCode) console.log(`Response code: ${response.statusCode}`);
     }
-    if(response.statusCode != 200){
-      console.log(`Current Crypto: ${currCrypto} Bad response code: ${response.statusCode}, message: ${response.statusMessage}`);
-    }
+
   });
     cryptoCount++;
-    if(DEBUG == 1) console.log(`Crypto count is ${cryptoCount}`)
+
     setTimeout(cryptoPrices, 30000);
 }
 client.login(config.token);
